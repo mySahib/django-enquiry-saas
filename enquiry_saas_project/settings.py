@@ -2,6 +2,7 @@ from pathlib import Path
 import os
 import dj_database_url
 
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -33,6 +34,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rangefilter",
     "import_export",
+    "cloudinary",
+    "cloudinary_storage",
     # My Apps
     "sales_enquiry",
     "crispy_forms",
@@ -79,10 +82,18 @@ WSGI_APPLICATION = 'enquiry_saas_project.wsgi.application'
 
 DATABASES = {
     "default": dj_database_url.config(
-        default="sqlite:///db.sqlite3",  # This is your local fallback
+        default="sqlite:///db.sqlite3",  # This is your local fallback, ignored on Render if DATABASE_URL is set
         conn_max_age=600,  # Optional: Reconnect after 10 minutes of inactivity
     )
 }
+
+CLOUDINARY = {
+    "cloud_name": os.environ.get("CLOUDINARY_CLOUD_NAME", "YOUR_CLOUD_NAME"),
+    "api_key": os.environ.get("CLOUDINARY_API_KEY", "YOUR_API_KEY"),
+    "api_secret": os.environ.get("CLOUDINARY_API_SECRET", "YOUR_API_SECRET"),
+}
+
+DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
