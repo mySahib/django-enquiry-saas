@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Enquiry Details: {{ enquiry.unique_id }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8 col-lg-7">
+        <div class="card">
+            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                <h4>Enquiry Details: {{ enquiry.unique_id }}</h4>
+                <div>
+                    {% if user.is_admin or user.is_dse and enquiry.dse == user %}
+                    <a href="{% url 'enquiry_update' enquiry.pk %}" class="btn btn-sm btn-outline-light me-2">Edit</a>
+                    {% endif %}
+                    <a href="{% url 'dse_dashboard' %}" class="btn btn-sm btn-outline-secondary">Back to Dashboard</a>
+                </div>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-4">Customer Name:</dt>
+                    <dd class="col-sm-8">{{ enquiry.customer_name }}</dd>
+
+                    <dt class="col-sm-4">Phone Number:</dt>
+                    <dd class="col-sm-8">{{ enquiry.phone_number }}</dd>
+
+                    <dt class="col-sm-4">Enquiry Source:</dt>
+                    <dd class="col-sm-8">{{ enquiry.get_enquiry_source_display }}</dd>
+
+                    <dt class="col-sm-4">Buying Type:</dt>
+                    <dd class="col-sm-8">{{ enquiry.get_buying_type_display }}</dd>
+
+                    {% if enquiry.buying_type == 'FINANCE' %}
+                    <dt class="col-sm-4">Finance Bank:</dt>
+                    <dd class="col-sm-8">{{ enquiry.finance_bank|default:"N/A" }}</dd>
+
+                    <dt class="col-sm-4">Assigned Financier:</dt>
+                    <dd class="col-sm-8">{{ enquiry.assigned_financier_name|default:"N/A" }}</dd>
+                    {% endif %}
+
+                    <dt class="col-sm-4">Deal Offer Image:</dt>
+                    <dd class="col-sm-8">
+                        {% if enquiry.deal_offer_image %}
+                        <a href="{{ enquiry.deal_offer_image.url }}" target="_blank">View Image</a>
+                        {% else %}
+                        N/A
+                        {% endif %}
+                    </dd>
+
+                    <dt class="col-sm-4">Remarks:</dt>
+                    <dd class="col-sm-8">{{ enquiry.remarks|default:"N/A" }}</dd>
+
+                    <dt class="col-sm-4">Follow-up Status:</dt>
+                    <dd class="col-sm-8">{{ enquiry.get_follow_up_status_display }}</dd>
+
+                    <dt class="col-sm-4">Current Status:</dt>
+                    <dd class="col-sm-8"><span
+                            class="badge bg-{% if enquiry.status == 'OPEN' %}primary{% elif enquiry.status == 'SOLD' %}success{% elif enquiry.status == 'CLOSED' %}secondary{% else %}warning{% endif %}">
+                            {{ enquiry.get_status_display }}</span></dd>
+
+                    <dt class="col-sm-4">Submitted by DSE:</dt>
+                    <dd class="col-sm-8">{{ enquiry.dse.username }}</dd>
+
+                    <dt class="col-sm-4">First Submitted At:</dt>
+                    <dd class="col-sm-8">{{ enquiry.first_submit_at|date:"M d, Y H:i" }}</dd>
+
+                    <dt class="col-sm-4">Last Updated At:</dt>
+                    <dd class="col-sm-8">{{ enquiry.last_updated_at|date:"M d, Y H:i" }}</dd>
+
+                    {% if enquiry.last_edited_by %}
+                    <dt class="col-sm-4">Last Edited By:</dt>
+                    <dd class="col-sm-8">{{ enquiry.last_edited_by.username }}</dd>
+                    {% endif %}
+
+                    {% if enquiry.status == 'SOLD' or enquiry.sold_at %}
+                    <dt class="col-sm-4">Sold At:</dt>
+                    <dd class="col-sm-8">{{ enquiry.sold_at|date:"M d, Y H:i"|default:"N/A" }}</dd>
+                    <dt class="col-sm-4">Sale Value:</dt>
+                    <dd class="col-sm-8">{{ enquiry.sale_value|default:"N/A" }}</dd>
+                    {% endif %}
+
+                    {% if enquiry.status == 'CLOSED' or enquiry.closed_at %}
+                    <dt class="col-sm-4">Closed At:</dt>
+                    <dd class="col-sm-8">{{ enquiry.closed_at|date:"M d, Y H:i"|default:"N/A" }}</dd>
+                    <dt class="col-sm-4">Close Reason:</dt>
+                    <dd class="col-sm-8">{{ enquiry.close_reason|default:"N/A" }}</dd>
+                    {% endif %}
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

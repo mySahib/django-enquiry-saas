@@ -1,0 +1,48 @@
+{% extends "admin/change_list.html" %}
+
+{% block object-tools-form %}
+{{ block.super }}
+{# Display your custom summary data here #}
+<div class="summary-metrics" style="background: #e9ecef; padding: 15px; margin-top: 20px; border-radius: 5px;">
+    <h4>Enquiry Summary (Current View)</h4>
+    <div class="row">
+        <div class="col-md-3"><strong>Total Enquiries:</strong> {{ summary_data.total_enquiries }}</div>
+        <div class="col-md-3"><strong>Total Open:</strong> {{ summary_data.total_open }}</div>
+        <div class="col-md-3"><strong>Total Sold:</strong> {{ summary_data.total_sold }}</div>
+        <div class="col-md-3"><strong>Total Closed:</strong> {{ summary_data.total_closed }}</div>
+    </div>
+    <div class="row mt-2">
+        <div class="col-md-4"><strong>Total Sale Value:</strong> ₹ {{ summary_data.total_sale_value|floatformat:2 }}
+        </div>
+        <div class="col-md-4"><strong>Overall Conversion Rate:</strong> {{ summary_data.overall_conversion_rate }}</div>
+    </div>
+
+    {% if summary_data.dse_metrics %}
+    <h5 class="mt-4">DSE-wise Conversion Rates (Current View)</h5>
+    <table class="table table-bordered table-sm mt-2">
+        <thead>
+            <tr>
+                <th>DSE</th>
+                <th>Total Enquiries</th>
+                <th>Sold Enquiries</th>
+                <th>Conversion Rate</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for dse_username, metrics in summary_data.dse_metrics.items %}
+            <tr>
+                <td>{{ dse_username }}</td>
+                <td>{{ metrics.total }}</td>
+                <td>{{ metrics.sold }}</td>
+                <td>{{ metrics.conversion_rate }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block result_list %}
+{{ block.super }} {# This ensures the regular table is still rendered #}
+{% endblock %}

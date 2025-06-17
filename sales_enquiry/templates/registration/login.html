@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %} {# Ensure this is present #}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6 col-lg-4">
+        <div class="card">
+            <div class="card-header bg-dark text-white text-center">
+                <h3>Login to Enquiry SaaS</h3>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form|crispy }} {# THIS IS THE MAGIC! #}
+                    <div class="d-grid mt-3">
+                        <button type="submit" class="btn btn-primary">Login</button>
+                    </div>
+                    <input type="hidden" name="next" value="{{ next }}">
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

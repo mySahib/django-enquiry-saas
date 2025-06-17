@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+{% if form.instance.pk %}Edit Enquiry{% else %}New Enquiry{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8 col-lg-7">
+        <div class="card">
+            <div class="card-header bg-dark text-white text-center">
+                <h3>{% if form.instance.pk %}Edit Enquiry: {{ enquiry.unique_id }}{% else %}Submit New Enquiry{% endif %}</h3>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ form.media }} {# Essential for widgets like FileInput #}
+
+                    {# RENDER FIELDS INDIVIDUALLY INSTEAD OF {{ form|crispy }} #}
+                    {# These fields are part of the Crispy Forms layout in forms.py #}
+                    {{ form.customer_name|as_crispy_field }}
+                    {{ form.phone_number|as_crispy_field }}
+                    {{ form.enquiry_source|as_crispy_field }}
+                    {{ form.interested_in_model|as_crispy_field }}
+                    {{ form.buying_type|as_crispy_field }}
+
+                    {# MANUALLY INSERT THE FINANCE FIELDS DIV #}
+                    <div id="finance-fields" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group col-md-6 mb-0">
+                                {{ form.finance_bank|as_crispy_field }}
+                            </div>
+                            <div class="form-group col-md-6 mb-0">
+                                {{ form.assigned_financier_name|as_crispy_field }}
+                            </div>
+                        </div>
+                    </div>
+
+                    {{ form.deal_offer_image|as_crispy_field }}
+                    {{ form.remarks|as_crispy_field }}
+                    {{ form.follow_up_status|as_crispy_field }}
+
+                    {% if request.user.is_admin %}
+                    {{ form.status|as_crispy_field }}
+                    {# MANUALLY INSERT THE STATUS-DEPENDENT FIELDS DIV #}
+                    <div id="status-dependent-fields" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group col-md-6 mb-0">
+                                {{ form.sale_value|as_crispy_field }}
+                            </div>
+                            <div class="form-group col-md-6 mb-0">
+                                {{ form.close_reason|as_crispy_field }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if form.instance.deal_offer_image %}
+                    <p class="mt-2">Current Deal Offer Image: <a href="{{ form.instance.deal_offer_image.url }}"
+                            target="_blank">View Image</a></p>
+                    {% endif %}
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                        <a href="{% url 'dse_dashboard' %}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">
+                            {% if form.instance.pk %}Submit Enquiry{% else %}Update Enquiry{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const buyingTypeSelect = document.getElementById('id_buying_type');
+        const financeFieldsDiv = document.getElementById('finance-fields');
+
+        // Status related fields (ONLY PRESENT IF ADMIN)
+        const statusSelect = document.getElementById('id_status');
+        const statusDependentFieldsDiv = document.getElementById('status-dependent-fields');
+
+
+        function toggleFinanceFields() {
+            if (financeFieldsDiv) {
+                if (buyingTypeSelect.value === 'FINANCE') {
+                    financeFieldsDiv.style.display = 'block';
+                } else {
+                    financeFieldsDiv.style.display = 'none';
+                    const financeBankField = document.getElementById('id_finance_bank');
+                    if (financeBankField) financeBankField.value = '';
+                    const assignedFinancierNameField = document.getElementById('id_assigned_financier_name');
+                    if (assignedFinancierNameField) assignedFinancierNameField.value = '';
+                }
+            }
+        }
+
+        function toggleStatusDependentFields() {
+            if (statusSelect && statusDependentFieldsDiv) {
+                const currentStatus = statusSelect.value;
+                const saleValueField = document.getElementById('id_sale_value');
+                const closeReasonField = document.getElementById('id_close_reason');
+
+                if (currentStatus === 'SOLD') {
+                    statusDependentFieldsDiv.style.display = 'block';
+                    if (saleValueField) saleValueField.closest('.form-group').style.display = 'block';
+                    if (closeReasonField) closeReasonField.closest('.form-group').style.display = 'none';
+                    if (closeReasonField) closeReasonField.value = '';
+                } else if (currentStatus === 'CLOSED') {
+                    statusDependentFieldsDiv.style.display = 'block';
+                    if (saleValueField) saleValueField.closest('.form-group').style.display = 'none';
+                    if (saleValueField) saleValueField.value = '';
+                    if (closeReasonField) closeReasonField.closest('.form-group').style.display = 'block';
+                } else {
+                    statusDependentFieldsDiv.style.display = 'none';
+                    if (saleValueField) saleValueField.value = '';
+                    if (closeReasonField) closeReasonField.value = '';
+                }
+            }
+        }
+
+        // CRITICAL: Initial calls to set visibility on page load
+        // Ensure buyingTypeSelect exists before calling toggleFinanceFields
+        if (buyingTypeSelect) {
+            toggleFinanceFields();
+            buyingTypeSelect.addEventListener('change', toggleFinanceFields);
+        }
+
+        if (statusSelect) {
+            toggleStatusDependentFields();
+            statusSelect.addEventListener('change', toggleStatusDependentFields);
+        }
+    });
+</script>
+{% endblock %}
